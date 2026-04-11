@@ -177,26 +177,83 @@ const App = () => {
   );
 
   const renderSessions = () => (
-    <div className="bg-white p-16 rounded-[4rem] border border-banyan-green/5 shadow-xl text-center flex flex-col items-center justify-center min-h-[500px]">
-      <div className="w-32 h-32 bg-linen rounded-[2.5rem] flex items-center justify-center text-muted-clay/30 mb-8"><Calendar size={64} /></div>
-      <h3 className="text-3xl font-heading font-black text-banyan-green">Your Journey so far.</h3>
-      <p className="text-muted-clay mt-4 mb-10 text-lg max-w-md font-medium">Every session is a leaf in the Banyan tree of our collective wisdom.</p>
-      <button onClick={() => setScreen('booking')} className="px-12 py-5 bg-terracotta text-white rounded-2xl font-bold font-heading text-xl shadow-2xl shadow-terracotta/20 hover:scale-105 active:scale-95 transition-all">Book First Session</button>
+    <div className="space-y-8">
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-5xl font-heading font-black text-banyan-green tracking-tighter">Your Journey.</h2>
+        <button onClick={() => setScreen('booking')} className="px-8 py-4 bg-terracotta text-white rounded-2xl font-bold hover:scale-105 active:scale-95 transition-all shadow-lg shadow-terracotta/20">Book New Session</button>
+      </div>
+
+      <div className="bg-white p-10 mt-8 rounded-[3rem] border border-banyan-green/5 shadow-xl">
+        <h3 className="font-heading font-bold text-2xl text-banyan-green mb-8">Upcoming Sessions</h3>
+        <div className="space-y-4">
+          <div className="p-6 bg-linen/50 border border-banyan-green/10 rounded-[2rem] flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-sage/5 transition-colors">
+             <div className="flex items-center gap-6">
+                <div className="w-16 h-16 shrink-0 bg-sage/20 text-sage rounded-2xl flex flex-col items-center justify-center font-bold">
+                  <span className="text-xl">14</span><span className="text-[10px] uppercase tracking-widest">Apr</span>
+                </div>
+                <div>
+                   <h4 className="text-xl font-bold text-banyan-green mb-1">Meera Sharma</h4>
+                   <p className="text-muted-clay font-medium text-sm">Topic: Introduction to Tanjore Painting</p>
+                </div>
+             </div>
+             <div className="flex gap-3">
+                <button className="px-8 py-3 bg-banyan-green text-white rounded-full font-bold text-sm shadow-md hover:bg-terracotta transition-colors">Join Video</button>
+             </div>
+          </div>
+          
+          <div className="p-6 bg-linen/30 border border-banyan-green/5 rounded-[2rem] flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-white transition-colors">
+             <div className="flex items-center gap-6">
+                <div className="w-16 h-16 shrink-0 bg-terracotta/10 text-terracotta rounded-2xl flex flex-col items-center justify-center font-bold">
+                  <span className="text-xl">16</span><span className="text-[10px] uppercase tracking-widest">Apr</span>
+                </div>
+                <div>
+                   <h4 className="text-xl font-bold text-banyan-green mb-1">Arjun Patel</h4>
+                   <p className="text-muted-clay font-medium text-sm">Topic: Setting up Secure Online Banking</p>
+                </div>
+             </div>
+             <div className="flex gap-3">
+                <button className="px-8 py-3 bg-white border border-banyan-green/20 text-banyan-green hover:bg-linen rounded-full font-bold text-sm transition-colors">Reschedule</button>
+             </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 
   const renderTokens = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-      <div className="bg-terracotta p-16 rounded-[4rem] text-white shadow-2xl relative overflow-hidden group">
+      <div className="bg-terracotta p-12 md:p-16 rounded-[4rem] text-white shadow-2xl relative overflow-hidden group">
         <div className="absolute top-[-10%] right-[-10%] w-64 h-64 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all" />
         <div className="flex items-center gap-3 mb-6 opacity-80"><History size={24} /> <span className="text-sm font-black uppercase tracking-[0.3em]">Reciprocity Balance</span></div>
-        <div className="text-9xl font-heading font-black mb-6">{profile?.reciprocity_tokens || 0}</div>
+        <div className="text-9xl font-heading font-black mb-6">{profile?.reciprocity_tokens || 20}</div>
         <p className="text-white/70 text-lg italic max-w-xs leading-relaxed">Pure currency of respect. Earned by sharing, spent by growing.</p>
       </div>
-      <div className="bg-white p-12 rounded-[4rem] border border-banyan-green/5 shadow-2xl">
+      <div className="bg-white p-10 md:p-12 rounded-[4rem] border border-banyan-green/5 shadow-xl flex flex-col">
         <h3 className="font-heading font-black text-3xl text-banyan-green mb-10 tracking-tighter">Legacy Activity</h3>
-        <div className="space-y-8">
-          <div className="text-muted-clay text-lg font-medium italic opacity-40">No recent transactions recorded.</div>
+        <div className="space-y-6 flex-1">
+          <div className="flex justify-between items-center border-b border-banyan-green/5 pb-6">
+             <div>
+                <div className="font-bold text-banyan-green text-xl mb-1">Guided Meera Sharma</div>
+                <div className="text-xs text-sage font-black uppercase tracking-widest">Heritage Hub Mentorship</div>
+             </div>
+             <div className="text-3xl font-black text-sage">+10</div>
+          </div>
+          
+          <div className="flex justify-between items-center border-b border-banyan-green/5 pb-6">
+             <div>
+                <div className="font-bold text-banyan-green text-xl mb-1">Learned from Rahul</div>
+                <div className="text-xs text-muted-clay font-black uppercase tracking-widest">Digital Literacy Session</div>
+             </div>
+             <div className="text-3xl font-black text-terracotta">-5</div>
+          </div>
+
+          <div className="flex justify-between items-center pb-2">
+             <div>
+                <div className="font-bold text-banyan-green text-xl mb-1">Welcome Bonus</div>
+                <div className="text-xs text-sage font-black uppercase tracking-widest">MindBridge Onboarding</div>
+             </div>
+             <div className="text-3xl font-black text-sage">+15</div>
+          </div>
         </div>
       </div>
     </div>
