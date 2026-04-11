@@ -1,31 +1,68 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, User, Sparkles, MessageSquare, History, Phone, Video } from 'lucide-react';
+import { Send, User, Sparkles, MessageSquare, History, Phone, Video, Mic, MicOff } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
 
 const LegacyChat = ({ currentProfile, matchName = "Meera Sharma" }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const scrollRef = useRef();
+  const recognitionRef = useRef(null);
 
   useEffect(() => {
     // Initial mock messages for demo
     setMessages([
-      { id: 1, sender: 'them', text: `Namaste ${currentProfile?.full_name?.split(' ')[0]}! I was just looking at your profile. Your interest in Vedic algorithms is fascinating.` },
+      { id: 1, sender: 'them', text: `Namaste ${currentProfile?.full_name?.split(' ')[0] || ''}! I was just looking at your profile. Your interest in Vedic algorithms is fascinating.` },
       { id: 2, sender: 'me', text: "Thank you, Meera! I'd love to learn how they apply to traditional architecture." }
     ]);
+
+    // Initialize Speech Recognition
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = true; // Show text as they speak
+      
+      recognitionRef.current.onresult = (event) => {
+        const transcript = Array.from(event.results)
+          .map(result => result[0].transcript)
+          .join('');
+        setNewMessage(transcript);
+      };
+
+      recognitionRef.current.onend = () => setIsListening(false);
+      recognitionRef.current.onerror = () => setIsListening(false);
+    }
   }, [currentProfile]);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, newMessage]);
+
+  const toggleListen = (e) => {
+    e.preventDefault();
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+    } else {
+      setNewMessage('');
+      recognitionRef.current?.start();
+      setIsListening(true);
+    }
+  };
 
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
+
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+    }
 
     const myMessage = {
       id: Date.now(),
@@ -116,11 +153,24 @@ const LegacyChat = ({ currentProfile, matchName = "Meera Sharma" }) => {
 
       {/* Input */}
       <form onSubmit={handleSendMessage} className="p-8 bg-white border-t border-banyan-green/5">
-        <div className="relative">
+        <div className="relative flex items-center gap-3">
+          <button
+            type="button"
+            onClick={toggleListen}
+            className={`w-14 h-14 shrink-0 rounded-[2rem] flex items-center justify-center transition-all shadow-md ${
+              isListening 
+                ? 'bg-terracotta text-white animate-pulse shadow-terracotta/40 scale-105' 
+                : 'bg-sage/10 text-banyan-green hover:bg-sage/20'
+            }`}
+            title="Voice Typing for Accessibility"
+          >
+            {isListening ? <MicOff size={24} /> : <Mic size={24} />}
+          </button>
+          
           <input
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Share some wisdom or ask a question..."
+            placeholder={isListening ? "Listening... Speak now" : "Share some wisdom..."}
             className="w-full py-6 pl-8 pr-24 bg-linen/30 rounded-[2.5rem] border-2 border-transparent focus:border-banyan-green/20 outline-none font-medium text-lg text-banyan-green transition-all"
           />
           <button 
@@ -136,3 +186,4 @@ const LegacyChat = ({ currentProfile, matchName = "Meera Sharma" }) => {
 };
 
 export default LegacyChat;
+
