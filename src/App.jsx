@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogIn, User, Mail, Sparkles, Plus, AlertCircle, LogOut, Search, Calendar, History, ShieldCheck } from 'lucide-react';
+import { LogIn, User, Mail, Sparkles, Plus, AlertCircle, LogOut, Search, Calendar, History, ShieldCheck, MessageSquare } from 'lucide-react';
 import { supabase } from './supabaseClient';
 
 // Components
@@ -10,6 +10,7 @@ import MatchScreen from './components/Match/MatchScreen';
 import SessionBooking from './components/Session/SessionBooking';
 import VoiceGuardian from './components/Guardian/VoiceGuardian';
 import BottomNav from './components/Layout/BottomNav';
+import LegacyChat from './components/Chat/LegacyChat';
 
 const App = () => {
   const [session, setSession] = useState(null);
@@ -171,7 +172,7 @@ const App = () => {
           <span className="bg-linen text-banyan-green px-6 py-2 rounded-full text-sm font-bold border border-banyan-green/10 uppercase tracking-widest">Tech</span>
         </div>
       </div>
-      <MatchScreen role={profile?.role} onAccept={() => setActiveTab('home')} embedded />
+      <MatchScreen role={profile?.role} onAccept={() => setActiveTab('chat')} embedded />
     </div>
   );
 
@@ -246,6 +247,13 @@ const App = () => {
     </div>
   );
 
+  const renderChat = () => (
+    <div className="space-y-8">
+      <h2 className="text-5xl font-heading font-black text-banyan-green tracking-tighter mb-8">Legacy Hub.</h2>
+      <LegacyChat currentProfile={profile} />
+    </div>
+  );
+
   const renderDashboard = () => (
     <div className="min-h-screen bg-linen flex flex-col pt-12 md:pt-16 pb-40">
       <div className="max-w-7xl mx-auto w-full px-8 md:px-12">
@@ -280,11 +288,12 @@ const App = () => {
               {activeTab === 'sessions' && renderSessions()}
               {activeTab === 'tokens' && renderTokens()}
               {activeTab === 'profile' && renderProfile()}
+              {activeTab === 'chat' && renderChat()}
             </motion.div>
           </AnimatePresence>
         </main>
       </div>
-      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+      <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
     </div>
   );
 

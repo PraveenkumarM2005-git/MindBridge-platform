@@ -1,10 +1,10 @@
-import React from 'react';
-import { Home, Compass, Calendar, Coins, User } from 'lucide-react';
+import { Home, Compass, Calendar, Coins, User, MessageSquare } from 'lucide-react';
 
-const BottomNav = ({ activeTab, onTabChange }) => {
+const BottomNav = ({ activeTab, setActiveTab }) => {
   const tabs = [
     { id: 'home', icon: Home, label: 'Home' },
     { id: 'discover', icon: Compass, label: 'Discover' },
+    { id: 'chat', icon: MessageSquare, label: 'Chat' },
     { id: 'sessions', icon: Calendar, label: 'Sessions' },
     { id: 'tokens', icon: Coins, label: 'Tokens' },
     { id: 'profile', icon: User, label: 'Profile' },
@@ -19,7 +19,7 @@ const BottomNav = ({ activeTab, onTabChange }) => {
         return (
           <button
             key={tab.id}
-            onClick={() => onTabChange(tab.id)}
+            onClick={() => setActiveTab(tab.id)}
             className="flex flex-col items-center gap-1 group"
           >
             <div className={`p-2 rounded-2xl transition-all duration-300 ${isActive ? 'bg-terracotta text-white shadow-lg shadow-terracotta/20 scale-110' : 'text-muted-clay hover:bg-muted-clay/5'}`}>
