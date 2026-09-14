@@ -44,18 +44,19 @@ ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON profiles;
 DROP POLICY IF EXISTS "Users can edit own profile" ON profiles;
 DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can manage own profile" ON profiles;
 
 DROP POLICY IF EXISTS "Users can see their own matches" ON matches;
 DROP POLICY IF EXISTS "Users can see their own sessions" ON sessions;
 DROP POLICY IF EXISTS "Users can insert sessions" ON sessions;
 
 CREATE POLICY "Public profiles are viewable by everyone" ON profiles FOR SELECT USING (true);
-CREATE POLICY "Users can edit own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
-CREATE POLICY "Users can insert own profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
+CREATE POLICY "Users can manage own profile" ON profiles FOR ALL USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
 
 CREATE POLICY "Users can see their own matches" ON matches FOR SELECT USING (auth.uid() = senior_id OR auth.uid() = youth_id);
 CREATE POLICY "Users can see their own sessions" ON sessions FOR SELECT USING (auth.uid() = mentor_id OR auth.uid() = learner_id);
 CREATE POLICY "Users can insert sessions" ON sessions FOR INSERT WITH CHECK (auth.uid() = mentor_id OR auth.uid() = learner_id);
+
 
 -- 6. Function to handle new user signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()

@@ -50,25 +50,31 @@ const OnboardingFlow = ({ user, onComplete }) => {
 
   const handleFinish = async () => {
     setIsSubmitting(true);
-    const { error } = await supabase
-      .from('profiles')
-      .upsert({
-        id: user.id,
-        full_name: formData.full_name,
-        role: formData.role,
-        bio: formData.bio,
-        skills: formData.skills_know,
-        interests: formData.skills_want,
-        reciprocity_tokens: 10, // Starter tokens
-      });
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          full_name: formData.full_name,
+          role: formData.role,
+          bio: formData.bio,
+          skills: formData.skills_know,
+          interests: formData.skills_want,
+          reciprocity_tokens: 10, // Starter tokens
+        });
 
-    if (error) {
-      console.error('Error saving profile:', error);
-      alert('Failed to save profile. Please try again.');
-    } else {
-      onComplete();
+      if (error) {
+        console.error('Error saving profile:', error);
+        alert(`Failed to save profile: ${error.message || error.details || 'Database permission error'}`);
+      } else {
+        onComplete();
+      }
+    } catch (err) {
+      console.error('Unexpected error saving profile:', err);
+      alert(`Error: ${err.message || 'Failed to save profile'}`);
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsSubmitting(false);
   };
 
   const cardVariants = {

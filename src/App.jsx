@@ -53,11 +53,15 @@ const App = () => {
             const userId = jwt?.sub;
             const userEmail = jwt?.email;
 
-            // Attempt session sync in background
-            supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken || '',
-            }).catch((e) => console.warn("Supabase setSession warning:", e));
+            // Attempt session sync
+            try {
+              await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken || '',
+              });
+            } catch (e) {
+              console.warn("Supabase setSession warning:", e);
+            }
 
             if (userId) {
               const mockSession = { user: { id: userId, email: userEmail } };
