@@ -352,6 +352,13 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-linen font-sans selection:bg-terracotta/20">
+      {message.text && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] max-w-lg w-full px-4">
+          <div className={`p-4 rounded-2xl font-bold text-center shadow-2xl ${message.type === 'error' ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white'}`}>
+            {message.text}
+          </div>
+        </div>
+      )}
       <AnimatePresence mode="wait">
         {screen === 'landing' && <LandingPage onStart={handleStart} />}
         {screen === 'login' && (
@@ -365,7 +372,7 @@ const App = () => {
                  <div className="w-12 h-12 bg-banyan-green/10 rounded-2xl flex items-center justify-center text-banyan-green"><User size={24} /></div>
                  <div>
                     <div className="text-[10px] font-black text-banyan-green/40 uppercase tracking-[0.2em]">Active Session</div>
-                    <div className="text-sm font-black text-banyan-green">Ready to resume</div>
+                    <div className="text-sm font-black text-banyan-green">{session.user.email}</div>
                  </div>
                  <button onClick={() => fetchProfile(session.user.id)} className="px-8 py-3 bg-banyan-green text-linen rounded-2xl font-black text-sm hover:bg-terracotta transition-all shadow-lg shadow-banyan-green/20">Proceed</button>
                </motion.div>
@@ -414,15 +421,6 @@ const App = () => {
                       {authLoading ? 'Verifying...' : <><Mail size={28} /> Send Magic Key</>}
                     </button>
                   </form>
-                  {message.text && (
-                    <motion.div 
-                      initial={{ opacity: 0, scale: 0.9 }} 
-                      animate={{ opacity: 1, scale: 1 }} 
-                      className={`p-6 rounded-[2rem] font-bold text-lg ${message.type === 'error' ? 'bg-terracotta/10 text-terracotta border border-terracotta/20' : 'bg-sage/10 text-banyan-green border border-sage/20'}`}
-                    >
-                      {message.text}
-                    </motion.div>
-                  )}
                 </div>
 
                 {/* Secure Badge */}
@@ -436,8 +434,8 @@ const App = () => {
         {screen === 'booking' && <SessionBooking profile={profile} onComplete={() => { fetchProfile(session.user.id); setScreen('dashboard'); }} />}
         {screen === 'matching' && <MatchScreen role={profile?.role} onAccept={() => setActiveTab('home')} />}
         {screen === 'guardian' && <VoiceGuardian onBack={() => setScreen('dashboard')} />}
-        {screen === 'onboarding' && session?.user && (
-          <OnboardingFlow user={session.user} onComplete={() => fetchProfile(session.user.id)} />
+        {screen === 'onboarding' && (
+          <OnboardingFlow user={session?.user || { id: session?.user?.id }} onComplete={() => fetchProfile(session.user.id)} />
         )}
       </AnimatePresence>
     </div>
