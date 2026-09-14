@@ -27,14 +27,8 @@ const App = () => {
       const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
       
-      const hasAuthParams = window.location.hash.includes('access_token') || 
-                               window.location.hash.includes('refresh_token') ||
-                               window.location.search.includes('code=');
-      const hasIntent = sessionStorage.getItem('mindbridge_auth_intent') === 'true';
-
-      if (session && (hasAuthParams || hasIntent)) {
-        sessionStorage.removeItem('mindbridge_auth_intent');
-        fetchProfile(session.user.id);
+      if (session) {
+        await fetchProfile(session.user.id);
       }
       setLoading(false);
     };
@@ -44,14 +38,8 @@ const App = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
       
-      const hasIntent = sessionStorage.getItem('mindbridge_auth_intent') === 'true';
-      const hasAuthParams = window.location.hash.includes('access_token') || 
-                               window.location.hash.includes('refresh_token') ||
-                               window.location.search.includes('code=');
-      
-      if (session && (hasIntent || hasAuthParams)) {
-        sessionStorage.removeItem('mindbridge_auth_intent');
-        fetchProfile(session.user.id);
+      if (session) {
+        await fetchProfile(session.user.id);
       } else if (event === 'SIGNED_OUT') {
         setProfile(null);
         setScreen('landing');
@@ -59,45 +47,50 @@ const App = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [screen]);
+  }, []);
 
   const fetchProfile = async (userId) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
 
-    if (error || !data.role) {
+      if (error || !data || !data.role) {
+        setScreen('onboarding');
+      } else {
+        setProfile(data);
+        setScreen('dashboard');
+      }
+    } catch (err) {
+      console.error("Profile fetch error:", err);
       setScreen('onboarding');
-    } else if (data) {
-      setProfile(data);
-      setScreen('dashboard');
     }
   };
 
   const handleMagicLink = async (e) => {
     e.preventDefault();
     setAuthLoading(true);
-    sessionStorage.setItem('mindbridge_auth_intent', 'true');
+    const redirectUrl = window.location.origin;
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: window.location.origin },
+      options: { emailRedirectTo: redirectUrl },
     });
     if (error) {
       setMessage({ type: 'error', text: error.message });
-      sessionStorage.removeItem('mindbridge_auth_intent');
+    } else {
+      setMessage({ type: 'success', text: 'Check your email for the magic link!' });
     }
-    else setMessage({ type: 'success', text: 'Check your email for the magic link!' });
     setAuthLoading(false);
   };
 
   const handleGoogleLogin = async () => {
-    sessionStorage.setItem('mindbridge_auth_intent', 'true');
+    const redirectUrl = window.location.origin;
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { 
-        redirectTo: window.location.origin,
+        redirectTo: redirectUrl,
         queryParams: { 
           prompt: 'select_account'
         } 
@@ -105,7 +98,6 @@ const App = () => {
     });
     if (error) {
       setMessage({ type: 'error', text: error.message });
-      sessionStorage.removeItem('mindbridge_auth_intent');
     }
   };
 
