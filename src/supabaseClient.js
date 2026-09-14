@@ -10,11 +10,9 @@ export const supabase = createClient(
     auth: {
       autoRefreshToken: true,
       persistSession: true,
-      detectSessionInUrl: true,
+      // Disable URL session detection - we handle it manually to avoid clock-skew 401s
+      detectSessionInUrl: false,
       flowType: 'implicit'
     }
   }
 )
-
-
-
