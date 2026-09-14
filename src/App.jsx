@@ -436,7 +436,7 @@ const App = () => {
         {screen === 'booking' && <SessionBooking profile={profile} onComplete={() => { fetchProfile(session.user.id); setScreen('dashboard'); }} />}
         {screen === 'matching' && <MatchScreen role={profile?.role} onAccept={() => setActiveTab('home')} />}
         {screen === 'guardian' && <VoiceGuardian onBack={() => setScreen('dashboard')} />}
-        {screen === 'onboarding' && (
+        {screen === 'onboarding' && session?.user && (
           <OnboardingFlow user={session.user} onComplete={() => fetchProfile(session.user.id)} />
         )}
       </AnimatePresence>
