@@ -24,23 +24,34 @@ const App = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      
-      if (session) {
-        await fetchProfile(session.user.id);
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error("Auth error:", error);
+          setMessage({ type: 'error', text: `Auth error: ${error.message}` });
+          if (error.status === 401 || error.message?.includes('future') || error.message?.includes('grant')) {
+            await supabase.auth.signOut();
+            window.localStorage.clear();
+          }
+        } else if (session) {
+          setSession(session);
+          await fetchProfile(session.user.id);
+        }
+      } catch (err) {
+        console.error("CheckAuth error:", err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     checkAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setSession(session);
-      
       if (session) {
+        setSession(session);
         await fetchProfile(session.user.id);
       } else if (event === 'SIGNED_OUT') {
+        setSession(null);
         setProfile(null);
         setScreen('landing');
       }
