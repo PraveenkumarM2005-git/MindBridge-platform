@@ -22,20 +22,62 @@ const App = () => {
   const [authLoading, setAuthLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
 
+  const parseJwt = (token) => {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      return null;
+    }
+  };
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error("Auth error:", error);
-          setMessage({ type: 'error', text: `Auth error: ${error.message}` });
-          if (error.status === 401 || error.message?.includes('future') || error.message?.includes('grant')) {
-            await supabase.auth.signOut();
-            window.localStorage.clear();
+        // 1. Direct Hash Inspection (Bypasses Gotrue clock-skew rejection on OAuth return)
+        const hash = window.location.hash;
+        if (hash && hash.includes('access_token=')) {
+          const hashParams = new URLSearchParams(hash.replace(/^#/, ''));
+          const accessToken = hashParams.get('access_token');
+          const refreshToken = hashParams.get('refresh_token');
+
+          if (accessToken) {
+            const jwt = parseJwt(accessToken);
+            const userId = jwt?.sub;
+            const userEmail = jwt?.email;
+
+            // Attempt session sync in background
+            supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken || '',
+            }).catch((e) => console.warn("Supabase setSession warning:", e));
+
+            if (userId) {
+              const mockSession = { user: { id: userId, email: userEmail } };
+              setSession(mockSession);
+              // Clean URL hash
+              window.history.replaceState(null, '', window.location.pathname);
+              await fetchProfile(userId);
+              setLoading(false);
+              return;
+            }
           }
-        } else if (session) {
+        }
+
+        // 2. Standard Session Check
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (session) {
           setSession(session);
           await fetchProfile(session.user.id);
+        } else if (error) {
+          console.warn("Session check warning:", error.message);
         }
       } catch (err) {
         console.error("CheckAuth error:", err);
